@@ -58,7 +58,7 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
     private final ReactApplicationContext context;
     private static String TAG = "RNWifiModule";
 
-    private static final int TIMEOUT_MILLIS = 15000;
+    private static final int TIMEOUT_MILLIS = 45000;
 
     RNWifiModule(ReactApplicationContext context) {
         super(context);
