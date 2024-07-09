@@ -2,23 +2,23 @@ def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
+// buildscript {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.3'
-    }
-}
+//     dependencies {
+//         classpath 'com.android.tools.build:gradle:7.1.3'
+//     }
+// }
 
 apply plugin: 'com.android.library'
 
 android {
     namespace = "com.reactlibrary.rnwifi"
 
-    compileSdkVersion safeExtGet(compileSdkVersion, 31)
+    compileSdkVersion safeExtGet(compileSdkVersion, 34)
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -33,13 +33,13 @@ android {
     }
 }
 
-repositories {
-    maven {
-        url "$projectDir/../node_modules/react-native/android"
-    }
-    google()
-    mavenCentral()
-}
+// repositories {
+//     maven {
+//         url "$projectDir/../node_modules/react-native/android"
+//     }
+//     google()
+//     mavenCentral()
+// }
 
 dependencies {
     //noinspection GradleDynamicVersion
