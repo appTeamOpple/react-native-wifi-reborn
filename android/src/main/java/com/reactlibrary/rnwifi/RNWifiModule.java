@@ -23,7 +23,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.provider.Settings;
 import android.os.Build;
-
+import com.reactlibrary.rnwifi.receivers.CompatReceviceHelp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -447,7 +447,10 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "wifi start scan: " + wifiStartScan);
         if (wifiStartScan) {
           final WifiScanResultReceiver wifiScanResultReceiver = new WifiScanResultReceiver(wifi, promise);
-          getReactApplicationContext().registerReceiver(wifiScanResultReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+          
+          IntentFilter intentFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+          CompatReceviceHelp.compatRegisterReceiver(getReactApplicationContext(),wifiScanResultReceiver,intentFilter,true);
+//          getReactApplicationContext().registerReceiver(wifiScanResultReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         } else {
             Log.d(TAG, "Wifi scan rejected");
             promise.resolve("Starting Android 9, it's only allowed to scan 4 times per 2 minuts in a foreground app.");
