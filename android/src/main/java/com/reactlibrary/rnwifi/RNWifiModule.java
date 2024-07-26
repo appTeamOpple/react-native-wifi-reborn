@@ -449,7 +449,7 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
           final WifiScanResultReceiver wifiScanResultReceiver = new WifiScanResultReceiver(wifi, promise);
           
           IntentFilter intentFilter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-          CompatReceviceHelp.compatRegisterReceiver(getReactApplicationContext(),wifiScanResultReceiver,intentFilter,true);
+          CompatReceviceHelp.compatRegisterReceiver(getReactApplicationContext(),wifiScanResultReceiver,intentFilter,false);
 //          getReactApplicationContext().registerReceiver(wifiScanResultReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         } else {
             Log.d(TAG, "Wifi scan rejected");
