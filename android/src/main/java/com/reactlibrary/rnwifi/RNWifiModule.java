@@ -465,15 +465,16 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
             }
         });
 
+        //先读取缓存
+        List<ScanResult> scanResults = wifi.getScanResults();
+        WritableArray writableArray = WifiScanResultsMapper.mapWifiScanResults(scanResults);
+        Log.d(TAG, "wifi start scan result2 size: " + scanResults.size() + "---" + writableArray.size());
+        getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(EVENT_AUTO_WIFI_FIND,writableArray);
+
         if (wifiStartScan) {
             promise.resolve(true);
         } else {
             Log.d(TAG, "Starting Android 9, it's only allowed to scan 4 times per 2 minuts in a foreground app.");
-            //启动失败后先读取缓存
-            List<ScanResult> scanResults = wifi.getScanResults();
-            WritableArray writableArray = WifiScanResultsMapper.mapWifiScanResults(scanResults);
-            Log.d(TAG, "wifi start scan result2 size: " + scanResults.size() + "---" + writableArray.size());
-            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(EVENT_AUTO_WIFI_FIND,writableArray);
             promise.resolve(true);
         }
     }
