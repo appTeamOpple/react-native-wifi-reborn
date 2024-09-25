@@ -23,6 +23,10 @@ import android.os.Looper;
 import android.util.Log;
 import android.provider.Settings;
 import android.os.Build;
+
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.reactlibrary.rnwifi.mappers.WifiScanResultsMapper;
 import com.reactlibrary.rnwifi.receivers.CompatReceviceHelp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,6 +56,9 @@ import com.thanosfisherman.wifiutils.wifiRemove.RemoveErrorCode;
 import com.thanosfisherman.wifiutils.wifiRemove.RemoveSuccessListener;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RNWifiModule extends ReactContextBaseJavaModule {
     private final WifiManager wifi;
@@ -434,6 +441,42 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
                 });
     }
 
+    public ExecutorService executorService = Executors.newSingleThreadExecutor();
+    public String EVENT_AUTO_WIFI_FIND = "com.opple.auto-wifi-find";
+
+    @ReactMethod
+    public void reScanAndLoadWifiListOptimize(final Promise promise) {
+        if (!assertLocationPermissionGranted(promise)) {
+            Log.d(TAG, "error assertLocationPermissionGranted");
+            promise.reject("error assertLocationPermissionGranted");
+            return;
+        }
+
+        boolean wifiStartScan = wifi.startScan();
+        Log.d(TAG, "wifi start scan: " + wifiStartScan);
+
+        wifi.registerScanResultsCallback(executorService, new WifiManager.ScanResultsCallback() {
+            @Override
+            public void onScanResultsAvailable() {
+                List<ScanResult> scanResults = wifi.getScanResults();
+                WritableArray writableArray = WifiScanResultsMapper.mapWifiScanResults(scanResults);
+                Log.d(TAG, "wifi start scan result1 size: " + scanResults.size() + "---" + writableArray.size());
+                getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(EVENT_AUTO_WIFI_FIND,writableArray);
+            }
+        });
+
+        if (wifiStartScan) {
+            promise.resolve(true);
+        } else {
+            Log.d(TAG, "Starting Android 9, it's only allowed to scan 4 times per 2 minuts in a foreground app.");
+            //启动失败后先读取缓存
+            List<ScanResult> scanResults = wifi.getScanResults();
+            WritableArray writableArray = WifiScanResultsMapper.mapWifiScanResults(scanResults);
+            Log.d(TAG, "wifi start scan result2 size: " + scanResults.size() + "---" + writableArray.size());
+            getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(EVENT_AUTO_WIFI_FIND,writableArray);
+            promise.resolve(true);
+        }
+    }
     /**
      * Similar to `loadWifiList` but it forcefully starts a new WiFi scan and only passes the results when the scan is done.
      */
@@ -445,6 +488,7 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
 
         boolean wifiStartScan = wifi.startScan();
         Log.d(TAG, "wifi start scan: " + wifiStartScan);
+        
         if (wifiStartScan) {
           final WifiScanResultReceiver wifiScanResultReceiver = new WifiScanResultReceiver(wifi, promise);
           
