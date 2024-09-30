@@ -441,6 +441,30 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
                 });
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public boolean isScanResultsCallbackAvailable() {
+        try {
+            // 获取 WifiManager 类
+            Class<?> wifiManagerClass = WifiManager.class;
+            // 尝试获取 ScanResultsCallback 接口
+            Class<?> scanResultsCallbackClass = Class.forName("android.net.wifi.WifiManager$ScanResultsCallback");
+            // 检查 ScanResultsCallback 是否是接口
+            if (scanResultsCallbackClass != null) {
+                return true;
+            }
+        } catch (ClassNotFoundException e) {
+            return false;
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        // 默认返回 false
+        return false;
+    }
+
     public ExecutorService executorService = Executors.newSingleThreadExecutor();
     public String EVENT_AUTO_WIFI_FIND = "com.opple.auto-wifi-find";
 
@@ -451,19 +475,20 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
             promise.reject("error assertLocationPermissionGranted");
             return;
         }
-
         boolean wifiStartScan = wifi.startScan();
-        Log.d(TAG, "wifi start scan: " + wifiStartScan);
+        Log.d(TAG, "wifi start scan: " + wifiStartScan + isScanResultsCallbackAvailable() + "");
 
-        wifi.registerScanResultsCallback(executorService, new WifiManager.ScanResultsCallback() {
-            @Override
-            public void onScanResultsAvailable() {
-                List<ScanResult> scanResults = wifi.getScanResults();
-                WritableArray writableArray = WifiScanResultsMapper.mapWifiScanResults(scanResults);
-                Log.d(TAG, "wifi start scan result1 size: " + scanResults.size() + "---" + writableArray.size());
-                getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(EVENT_AUTO_WIFI_FIND,writableArray);
-            }
-        });
+        if(isScanResultsCallbackAvailable()){
+            wifi.registerScanResultsCallback(executorService, new WifiManager.ScanResultsCallback() {
+                @Override
+                public void onScanResultsAvailable() {
+                    List<ScanResult> scanResults = wifi.getScanResults();
+                    WritableArray writableArray = WifiScanResultsMapper.mapWifiScanResults(scanResults);
+                    Log.d(TAG, "wifi start scan result1 size: " + scanResults.size() + "---" + writableArray.size());
+                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(EVENT_AUTO_WIFI_FIND,writableArray);
+                }
+            });
+        }
 
         //先读取缓存
         List<ScanResult> scanResults = wifi.getScanResults();
