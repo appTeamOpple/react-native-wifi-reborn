@@ -472,7 +472,6 @@ public class RNWifiModule extends ReactContextBaseJavaModule {
     public void reScanAndLoadWifiListOptimize(final Promise promise) {
         if (!assertLocationPermissionGranted(promise)) {
             Log.d(TAG, "error assertLocationPermissionGranted");
-            promise.reject("error assertLocationPermissionGranted");
             return;
         }
         boolean wifiStartScan = wifi.startScan();
